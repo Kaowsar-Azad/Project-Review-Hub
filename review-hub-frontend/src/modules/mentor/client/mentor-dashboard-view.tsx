@@ -79,7 +79,6 @@ export function MentorDashboardView() {
       const user = JSON.parse(savedUser);
       const isMentor =
         user?.role === "MENTOR" ||
-        user?.email?.includes("mentor") ||
         user?.email === "kaowsar148@gmail.com";
 
       if (!isMentor) {

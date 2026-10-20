@@ -57,13 +57,13 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   };
 
-  const isMentor = currentUser?.role === "MENTOR" || currentUser?.email?.includes("mentor") || currentUser?.email === "kaowsar148@gmail.com";
+  const isMentor = currentUser?.role === "MENTOR"  || currentUser?.email === "kaowsar148@gmail.com";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         
-        {/* লোগো */}
+       
         <Link 
           href="/" 
           onClick={handleCloseMobileMenu} 
@@ -101,15 +101,9 @@ export default function Navbar() {
             </>
           )}
 
-          {(!currentUser || isMentor) && (
+          {isMentor && (
             <Link
-              href={currentUser ? "/mentor" : "/login"}
-              onClick={(e) => {
-                if (!currentUser) {
-                  e.preventDefault();
-                  router.push("/login");
-                }
-              }}
+              href="/mentor"
               className={`flex items-center gap-2 transition hover:text-foreground ${
                 pathname === "/mentor" ? "text-brand-primary font-semibold" : "text-muted-foreground"
               }`}
@@ -120,7 +114,6 @@ export default function Navbar() {
           )}
         </nav>
 
-        {/* ডেক্সটপ অথ বাটন / ইউজার প্রোফাইল */}
         <div className="hidden md:flex items-center gap-3">
           {currentUser ? (
             <div className="flex items-center gap-3">
@@ -218,14 +211,10 @@ export default function Navbar() {
                 </Link>
               </>
             )}
-
-            {(!currentUser || isMentor) && (
+            {isMentor && (
               <Link
-                href={currentUser ? "/mentor" : "/login"}
-                onClick={() => {
-                  handleCloseMobileMenu();
-                  if (!currentUser) router.push("/login");
-                }}
+                href="/mentor"
+                onClick={handleCloseMobileMenu}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <LayoutDashboard className="h-4 w-4" />

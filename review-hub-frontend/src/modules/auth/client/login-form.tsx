@@ -39,7 +39,7 @@ export function LoginForm() {
 
       toast.success("Welcome back! Logged in successfully.");
 
-      if ((data?.user as any)?.role === "MENTOR" || email.includes("mentor") || email === "kaowsar148@gmail.com") {
+      if ((data?.user as any)?.role === "MENTOR" || email === "kaowsar148@gmail.com") {
         router.push("/mentor");
       } else {
         router.push("/student");

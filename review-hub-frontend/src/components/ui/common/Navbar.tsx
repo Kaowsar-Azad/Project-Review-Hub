@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Code2, LayoutDashboard, Send, LogIn, Menu, X } from "lucide-react";
+import { Code2, LayoutDashboard, Send, LogIn, Menu, X, FolderGit2 } from "lucide-react";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -44,6 +44,15 @@ export default function Navbar() {
             <Send className="h-4 w-4" />
             <span>Submit Project</span>
           </Link>
+                    {/* My Submissions লিংক */}
+          <Link
+            href="/submissions"
+            className="flex items-center gap-2 text-muted-foreground transition hover:text-foreground"
+          >
+            <FolderGit2 className="h-4 w-4" />
+            <span>My Submissions</span>
+          </Link>
+
           <Link
             href="/mentor"
             className="flex items-center gap-2 text-muted-foreground transition hover:text-foreground"

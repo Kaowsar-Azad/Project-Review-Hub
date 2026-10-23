@@ -1,8 +1,10 @@
 import { Router } from "express";
-import authRoutes from "./auth";
+import submissionRoutes from "./submissions";
+import mentorRoutes from "./mentor";
 
 const router = Router();
 
-router.use("/auth", authRoutes);
+router.use("/submissions", submissionRoutes);
+router.use("/mentor", mentorRoutes);
 
 export default router;

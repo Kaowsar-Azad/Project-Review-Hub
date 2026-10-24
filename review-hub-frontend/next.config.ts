@@ -15,10 +15,13 @@ const nextConfig: NextConfig = {
     },
   },
   async rewrites() {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      "https://project-review-hub-backend.vercel.app";
     return [
       {
         source: "/api/auth/:path*",
-        destination: "http://localhost:5000/api/auth/:path*",
+        destination: `${backendUrl}/api/auth/:path*`,
       },
     ];
   },

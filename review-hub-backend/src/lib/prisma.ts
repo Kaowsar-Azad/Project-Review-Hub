@@ -4,7 +4,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const connectionString =
+  process.env.DATABASE_URL ||
+  "postgresql://dummy:dummy@localhost:5432/dummy";
+
+const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 export default prisma;

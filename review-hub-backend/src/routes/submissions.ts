@@ -11,7 +11,7 @@ const submissionRateLimiter = rateLimit({
   keyGenerator: (req: any) => {
     return req.user?.id || req.ip || "anonymous";
   },
-  validate: { ip: false },
+  validate: false,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

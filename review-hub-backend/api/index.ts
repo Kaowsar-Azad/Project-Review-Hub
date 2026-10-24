@@ -1,6 +1,9 @@
 import app from "../src/server";
 
-export default function handler(req: any, res: any) {
-  const server = (app as any).default || app;
-  return server(req, res);
+export default app;
+
+// Ensure full compatibility with both CommonJS and ES Module loaders on Vercel
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = app;
+  (module.exports as any).default = app;
 }

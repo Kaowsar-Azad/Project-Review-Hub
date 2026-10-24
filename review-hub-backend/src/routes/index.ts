@@ -1,6 +1,6 @@
 import { Router } from "express";
-import submissionRoutes from "./submissions";
-import mentorRoutes from "./mentor";
+import submissionRoutes from "./submissions.js";
+import mentorRoutes from "./mentor.js";
 
 const router = Router();
 

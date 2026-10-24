@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { auth } from "../lib/auth";
+import { auth } from "../lib/auth.js";
 import { fromNodeHeaders } from "better-auth/node";
-import prisma from "../lib/prisma";
+import prisma from "../lib/prisma.js";
 
 export interface AuthRequest extends Request {
   user?: {

@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import rateLimit from "express-rate-limit";
-import prisma from "../lib/prisma";
-import { AuthRequest, verifyAuth } from "../middlewares/auth";
+import prisma from "../lib/prisma.js";
+import { AuthRequest, verifyAuth } from "../middlewares/auth.js";
 
 const router = Router();
 

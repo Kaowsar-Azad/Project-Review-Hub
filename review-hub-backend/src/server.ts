@@ -2,8 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { toNodeHandler } from "better-auth/node"; // <-- Better Auth Node Handler
-import { auth } from "./lib/auth"; // <-- আপনার auth.ts
-import routes from "./routes";
+import { auth } from "./lib/auth.js"; // <-- আপনার auth.ts
+import routes from "./routes/index.js";
 
 dotenv.config();
 
@@ -32,7 +32,7 @@ app.use(express.json());
 
 app.use("/api", routes);
 
-app.get("/", (req, res) => {
+app.get(["/", "/api"], (_req, res) => {
   res.json({ message: "ReviewHub Backend Server is running smoothly!" });
 });
 

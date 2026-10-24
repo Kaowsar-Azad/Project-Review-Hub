@@ -80,7 +80,13 @@ export default function Navbar() {
           {(!currentUser || !isMentor) && (
             <>
               <Link
-                href="/student"
+                href={currentUser ? "/student" : "/login"}
+                onClick={(e) => {
+                  if (!currentUser) {
+                    e.preventDefault();
+                    router.push("/login");
+                  }
+                }}
                 className={`flex items-center gap-2 transition hover:text-foreground ${
                   pathname === "/student" ? "text-brand-primary font-semibold" : "text-muted-foreground"
                 }`}
@@ -90,7 +96,13 @@ export default function Navbar() {
               </Link>
 
               <Link
-                href="/submissions"
+                href={currentUser ? "/submissions" : "/login"}
+                onClick={(e) => {
+                  if (!currentUser) {
+                    e.preventDefault();
+                    router.push("/login");
+                  }
+                }}
                 className={`flex items-center gap-2 transition hover:text-foreground ${
                   pathname === "/submissions" ? "text-brand-primary font-semibold" : "text-muted-foreground"
                 }`}
@@ -103,7 +115,13 @@ export default function Navbar() {
 
           {(!currentUser || isMentor) && (
             <Link
-              href="/mentor"
+              href={currentUser ? "/mentor" : "/login"}
+              onClick={(e) => {
+                if (!currentUser) {
+                  e.preventDefault();
+                  router.push("/login");
+                }
+              }}
               className={`flex items-center gap-2 transition hover:text-foreground ${
                 pathname === "/mentor" ? "text-brand-primary font-semibold" : "text-muted-foreground"
               }`}
@@ -195,16 +213,22 @@ export default function Navbar() {
             {(!currentUser || !isMentor) && (
               <>
                 <Link
-                  href="/student"
-                  onClick={handleCloseMobileMenu}
+                  href={currentUser ? "/student" : "/login"}
+                  onClick={() => {
+                    handleCloseMobileMenu();
+                    if (!currentUser) router.push("/login");
+                  }}
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <Send className="h-4 w-4" />
                   <span>Submit Project</span>
                 </Link>
                 <Link
-                  href="/submissions"
-                  onClick={handleCloseMobileMenu}
+                  href={currentUser ? "/submissions" : "/login"}
+                  onClick={() => {
+                    handleCloseMobileMenu();
+                    if (!currentUser) router.push("/login");
+                  }}
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <FolderGit2 className="h-4 w-4" />
@@ -215,8 +239,11 @@ export default function Navbar() {
 
             {(!currentUser || isMentor) && (
               <Link
-                href="/mentor"
-                onClick={handleCloseMobileMenu}
+                href={currentUser ? "/mentor" : "/login"}
+                onClick={() => {
+                  handleCloseMobileMenu();
+                  if (!currentUser) router.push("/login");
+                }}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <LayoutDashboard className="h-4 w-4" />

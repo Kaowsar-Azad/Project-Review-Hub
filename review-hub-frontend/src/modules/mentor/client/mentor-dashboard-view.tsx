@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Layers,
   Clock,
@@ -21,6 +22,8 @@ import { MentorService } from "../mentor.service";
 import { SubmissionFilter } from "../mentor.types";
 
 export function MentorDashboardView() {
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [loading, setLoading] = useState(true);
@@ -52,14 +55,46 @@ export function MentorDashboardView() {
       }
     } catch (err: any) {
       console.error("Failed to load mentor dashboard data", err);
-      toast.error("Failed to load mentor submissions");
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        toast.error("Session expired or unauthorized. Please log in again.");
+        router.replace("/login");
+      } else {
+        toast.error("Failed to load mentor submissions");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadDashboardData(currentPage, activeFilter);
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+    if (!savedUser) {
+      toast.error("Please log in first to access the Mentor Dashboard.");
+      router.replace("/login");
+      setIsAuthorized(false);
+      return;
+    }
+
+    try {
+      const user = JSON.parse(savedUser);
+      const isMentor =
+        user?.role === "MENTOR" ||
+        user?.email?.includes("mentor") ||
+        user?.email === "kaowsar148@gmail.com";
+
+      if (!isMentor) {
+        toast.error("Access restricted: Only Mentors can access the Mentor Dashboard.");
+        router.replace("/student");
+        setIsAuthorized(false);
+        return;
+      }
+
+      setIsAuthorized(true);
+      loadDashboardData(currentPage, activeFilter);
+    } catch {
+      router.replace("/login");
+      setIsAuthorized(false);
+    }
   }, [currentPage, activeFilter]);
 
   const handleFilterChange = (filter: SubmissionFilter) => {
@@ -86,6 +121,15 @@ export function MentorDashboardView() {
     setSelectedSubmission(item);
     setFeedbackNote(item.feedback || "");
   };
+
+  if (isAuthorized !== true) {
+    return (
+      <div className="w-full min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
+        <p className="text-sm text-muted-foreground font-medium">Verifying mentor access...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

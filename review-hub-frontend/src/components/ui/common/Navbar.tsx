@@ -80,13 +80,7 @@ export default function Navbar() {
           {(!currentUser || !isMentor) && (
             <>
               <Link
-                href={currentUser ? "/student" : "/login"}
-                onClick={(e) => {
-                  if (!currentUser) {
-                    e.preventDefault();
-                    router.push("/login");
-                  }
-                }}
+                href="/student"
                 className={`flex items-center gap-2 transition hover:text-foreground ${
                   pathname === "/student" ? "text-brand-primary font-semibold" : "text-muted-foreground"
                 }`}
@@ -96,13 +90,7 @@ export default function Navbar() {
               </Link>
 
               <Link
-                href={currentUser ? "/submissions" : "/login"}
-                onClick={(e) => {
-                  if (!currentUser) {
-                    e.preventDefault();
-                    router.push("/login");
-                  }
-                }}
+                href="/submissions"
                 className={`flex items-center gap-2 transition hover:text-foreground ${
                   pathname === "/submissions" ? "text-brand-primary font-semibold" : "text-muted-foreground"
                 }`}
@@ -213,22 +201,16 @@ export default function Navbar() {
             {(!currentUser || !isMentor) && (
               <>
                 <Link
-                  href={currentUser ? "/student" : "/login"}
-                  onClick={() => {
-                    handleCloseMobileMenu();
-                    if (!currentUser) router.push("/login");
-                  }}
+                  href="/student"
+                  onClick={handleCloseMobileMenu}
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <Send className="h-4 w-4" />
                   <span>Submit Project</span>
                 </Link>
                 <Link
-                  href={currentUser ? "/submissions" : "/login"}
-                  onClick={() => {
-                    handleCloseMobileMenu();
-                    if (!currentUser) router.push("/login");
-                  }}
+                  href="/submissions"
+                  onClick={handleCloseMobileMenu}
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <FolderGit2 className="h-4 w-4" />

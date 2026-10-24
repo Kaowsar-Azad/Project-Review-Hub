@@ -12,8 +12,11 @@ import {
   Eye,
   MessageSquare,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
+import { toast } from "sonner";
 import { MentorService } from "../mentor.service";
 import { SubmissionFilter } from "../mentor.types";
 
@@ -26,40 +29,54 @@ export function MentorDashboardView() {
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
   const [feedbackNote, setFeedbackNote] = useState<string>("");
 
-  const loadDashboardData = async () => {
+  // Server-side pagination state (10 per page)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
+
+  const loadDashboardData = async (pageToLoad = currentPage, filterToLoad = activeFilter) => {
     try {
       setLoading(true);
       const [statsRes, subRes] = await Promise.all([
         MentorService.getStats(),
-        MentorService.getSubmissions(activeFilter),
+        MentorService.getSubmissions(filterToLoad, undefined, pageToLoad, 10),
       ]);
       if (statsRes?.stats) {
         setStats(statsRes.stats);
       }
-      if (subRes?.submissions) {
-        setSubmissions(subRes.submissions);
+      if (subRes) {
+        setSubmissions(subRes.submissions || []);
+        setTotalCount(subRes.totalCount ?? subRes.count ?? 0);
+        setTotalPages(subRes.totalPages || 1);
+        setCurrentPage(subRes.currentPage || pageToLoad);
       }
     } catch (err: any) {
       console.error("Failed to load mentor dashboard data", err);
+      toast.error("Failed to load mentor submissions");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadDashboardData();
-  }, [activeFilter]);
+    loadDashboardData(currentPage, activeFilter);
+  }, [currentPage, activeFilter]);
+
+  const handleFilterChange = (filter: SubmissionFilter) => {
+    setActiveFilter(filter);
+    setCurrentPage(1);
+  };
 
   const handleUpdateStatus = async (id: string, newStatus: "APPROVED" | "REJECTED") => {
     try {
       setActionLoading(true);
       await MentorService.updateReview(id, newStatus, feedbackNote);
-      alert(`Submission ${newStatus.toLowerCase()} successfully!`);
+      toast.success(`Submission ${newStatus.toLowerCase()} successfully!`);
       setSelectedSubmission(null);
       setFeedbackNote("");
-      await loadDashboardData();
+      await loadDashboardData(currentPage, activeFilter);
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to update review status");
+      toast.error(err.response?.data?.message || "Failed to update review status");
     } finally {
       setActionLoading(false);
     }
@@ -127,7 +144,7 @@ export function MentorDashboardView() {
         {(["ALL", "PENDING", "APPROVED", "REJECTED"] as const).map((filter) => (
           <button
             key={filter}
-            onClick={() => setActiveFilter(filter)}
+            onClick={() => handleFilterChange(filter)}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
               activeFilter === filter
                 ? "bg-brand-primary text-white shadow-sm"
@@ -258,6 +275,71 @@ export function MentorDashboardView() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Server-Side Pagination Bar */}
+        {!loading && totalCount > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border px-4 py-3 bg-muted/20 text-xs text-muted-foreground">
+            <div>
+              Showing{" "}
+              <span className="font-semibold text-foreground">
+                {(currentPage - 1) * 10 + 1}
+              </span>{" "}
+              to{" "}
+              <span className="font-semibold text-foreground">
+                {Math.min(currentPage * 10, totalCount)}
+              </span>{" "}
+              of <span className="font-semibold text-foreground">{totalCount}</span>{" "}
+              submissions (Page {currentPage} of {totalPages})
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                disabled={currentPage <= 1 || loading}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition font-medium cursor-pointer"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                <span>Previous</span>
+              </button>
+
+              <div className="flex items-center gap-1 px-1">
+                {Array.from({ length: totalPages }, (_, idx) => idx + 1)
+                  .filter(
+                    (p) =>
+                      p === 1 ||
+                      p === totalPages ||
+                      Math.abs(p - currentPage) <= 1
+                  )
+                  .map((p, idx, arr) => (
+                    <span key={p} className="flex items-center">
+                      {idx > 0 && arr[idx - 1] !== p - 1 && (
+                        <span className="px-1 text-muted-foreground">…</span>
+                      )}
+                      <button
+                        onClick={() => setCurrentPage(p)}
+                        className={`h-7 w-7 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                          currentPage === p
+                            ? "bg-brand-primary text-white shadow-xs"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    </span>
+                  ))}
+              </div>
+
+              <button
+                disabled={currentPage >= totalPages || loading}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition font-medium cursor-pointer"
+              >
+                <span>Next</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -6,10 +6,17 @@ export class MentorService {
     return response.data;
   }
 
-  static async getSubmissions(filter?: string, search?: string) {
+  static async getSubmissions(
+    filter?: string,
+    search?: string,
+    page: number = 1,
+    limit: number = 10
+  ) {
     const params = new URLSearchParams();
     if (filter && filter !== "ALL") params.append("status", filter);
     if (search) params.append("search", search);
+    params.append("page", page.toString());
+    params.append("limit", limit.toString());
     const response = await api.get(`/mentor/submissions?${params.toString()}`);
     return response.data;
   }

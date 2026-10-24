@@ -1,10 +1,26 @@
 import { Router, Response } from "express";
+import rateLimit from "express-rate-limit";
 import prisma from "../lib/prisma";
 import { AuthRequest, verifyAuth } from "../middlewares/auth";
 
 const router = Router();
 
-router.post("/", verifyAuth, async (req: AuthRequest, res: Response) => {
+const submissionRateLimiter = rateLimit({
+  windowMs: 30 * 1000,
+  max: 1,
+  keyGenerator: (req: any) => {
+    return req.user?.id || req.ip || "anonymous";
+  },
+  validate: { ip: false },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Rate limit reached: Please wait 30 seconds before submitting another project.",
+  },
+});
+
+router.post("/", verifyAuth, submissionRateLimiter, async (req: AuthRequest, res: Response) => {
   try {
     const { projectName, repoUrl, liveUrl, description } = req.body;
     const studentId = req.user?.id || req.body.studentId;

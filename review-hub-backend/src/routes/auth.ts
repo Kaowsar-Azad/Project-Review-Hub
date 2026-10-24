@@ -26,9 +26,9 @@ router.post("/signup", async (req: Request, res: Response) => {
 
     const user = await prisma.user.create({
       data: {
+        name: fullName,
         fullName,
         email,
-        password,
         studentId: studentId || null,
         role: role === "MENTOR" ? "MENTOR" : "STUDENT",
       },
@@ -56,12 +56,22 @@ router.post("/signup", async (req: Request, res: Response) => {
 router.post("/login", async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
-    if (!user || user.password !== password) {
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    const account = await prisma.account.findFirst({
+      where: { userId: user.id },
+    });
+
+    if (!user || !account || account.password !== password) {
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",

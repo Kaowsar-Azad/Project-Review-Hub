@@ -33,6 +33,34 @@ export const verifyAuth = async (
       return next();
     }
 
+    // Support Better Auth JWT Bearer Token
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      try {
+        const parts = token.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf-8"));
+          const userId = payload.sub || payload.id;
+          if (userId) {
+            const dbUser = await prisma.user.findUnique({
+              where: { id: userId },
+              select: { id: true, role: true },
+            });
+            if (dbUser) {
+              req.user = {
+                id: dbUser.id,
+                role: dbUser.role || payload.role || "STUDENT",
+              };
+              return next();
+            }
+          }
+        }
+      } catch (jwtErr) {
+        // Fallback to other auth methods
+      }
+    }
+
     const userId = req.headers["x-user-id"] as string;
 
     if (userId) {

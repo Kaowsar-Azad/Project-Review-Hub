@@ -31,6 +31,9 @@ router.get("/stats", verifyAuth, requireMentor, async (req: AuthRequest, res: Re
 router.get("/submissions", verifyAuth, requireMentor, async (req: AuthRequest, res: Response) => {
   try {
     const { status, search } = req.query;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit as string) || 10);
+    const skip = (page - 1) * limit;
 
     const whereClause: any = {};
     if (status && status !== "ALL") {
@@ -44,24 +47,35 @@ router.get("/submissions", verifyAuth, requireMentor, async (req: AuthRequest, r
       };
     }
 
-    const submissions = await prisma.submission.findMany({
-      where: whereClause,
-      include: {
-        student: {
-          select: {
-            name: true,
-            fullName: true,
-            email: true,
-            studentId: true,
+    const [totalCount, submissions] = await Promise.all([
+      prisma.submission.count({ where: whereClause }),
+      prisma.submission.findMany({
+        where: whereClause,
+        include: {
+          student: {
+            select: {
+              name: true,
+              fullName: true,
+              email: true,
+              studentId: true,
+            },
           },
         },
-      },
-      orderBy: { submittedAt: "desc" },
-    });
+        orderBy: { submittedAt: "desc" },
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / limit) || 1;
 
     return res.json({
       success: true,
       count: submissions.length,
+      totalCount,
+      totalPages,
+      currentPage: page,
+      limit,
       submissions,
     });
   } catch (error: any) {

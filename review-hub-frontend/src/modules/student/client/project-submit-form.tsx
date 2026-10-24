@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Send, ExternalLink, Loader2 } from "lucide-react";
+import { Send, ExternalLink, Loader2, Clock } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
+import { toast } from "sonner";
 import { StudentService } from "../student.service";
 
 export function ProjectSubmitForm() {
@@ -13,13 +14,28 @@ export function ProjectSubmitForm() {
   const [liveUrl, setLiveUrl] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState<number>(0);
+
+  // 30-second anti-spam countdown timer
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (cooldown > 0) {
+      toast.warning(`Rate limit: Please wait ${cooldown} seconds before submitting again.`);
+      return;
+    }
+
     const userStr = typeof window !== "undefined" ? localStorage.getItem("user") : null;
     if (!userStr) {
-      alert("Please log in first to submit your project!");
+      toast.error("Please log in first to submit your project!");
       router.push("/login");
       return;
     }
@@ -28,24 +44,24 @@ export function ProjectSubmitForm() {
     try {
       user = JSON.parse(userStr);
     } catch {
-      alert("Invalid session. Please log in again.");
+      toast.error("Invalid session. Please log in again.");
       router.push("/login");
       return;
     }
 
     if (!user?.id) {
-      alert("Please log in first to submit your project!");
+      toast.error("Please log in first to submit your project!");
       router.push("/login");
       return;
     }
 
     if (!projectName.trim() || !repoUrl.trim() || !liveUrl.trim() || !description.trim()) {
-      alert("Please fill in all required fields!");
+      toast.error("Please fill in all required fields!");
       return;
     }
 
     if (!repoUrl.includes("github.com")) {
-      alert("Please provide a valid GitHub repository URL!");
+      toast.error("Please provide a valid GitHub repository URL!");
       return;
     }
 
@@ -59,12 +75,21 @@ export function ProjectSubmitForm() {
         studentId: user.id,
       });
 
-      alert("Project submitted successfully!");
+      // Activate 30s anti-spam cooldown
+      setCooldown(30);
+      toast.success("Project submitted successfully! 30s cooldown active.");
+
+      // Clear form
+      setProjectName("");
+      setRepoUrl("");
+      setLiveUrl("");
+      setDescription("");
+
       router.push("/submissions");
     } catch (err: any) {
       const errorMsg =
         err.response?.data?.message || "Failed to submit project. Please try again.";
-      alert(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -143,11 +168,23 @@ export function ProjectSubmitForm() {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-brand py-2.5 text-sm font-semibold text-white shadow-md transition hover:opacity-95 mt-1 disabled:opacity-50 cursor-pointer"
+            disabled={loading || cooldown > 0}
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-brand py-2.5 text-sm font-semibold text-white shadow-md transition hover:opacity-95 mt-1 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            <span>{loading ? "Submitting..." : "Submit Project"}</span>
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : cooldown > 0 ? (
+              <Clock className="h-4 w-4 animate-pulse text-amber-200" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            <span>
+              {loading
+                ? "Submitting..."
+                : cooldown > 0
+                ? `Wait ${cooldown}s before submitting again`
+                : "Submit Project"}
+            </span>
           </button>
         </form>
       </div>

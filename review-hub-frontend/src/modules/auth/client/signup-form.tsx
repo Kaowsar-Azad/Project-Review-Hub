@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, Mail, Lock, UserPlus, ArrowRight, Check } from "lucide-react";
-import { api } from "@/lib/api";
+import { toast } from "sonner";
+import { AuthService } from "../auth.service";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -18,22 +19,22 @@ export function SignUpForm() {
 
     try {
       setLoading(true);
-      const res = await api.post("/auth/sign-up/email", {
+      const data = await AuthService.signUp({
         name: fullName,
         email: email,
         password: password,
       });
 
-      if (res.data?.user) {
-        localStorage.setItem("user", JSON.stringify(res.data.user));
+      if (data?.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
       }
 
-      alert("Account created successfully!");
+      toast.success("Account created successfully! Welcome to ReviewHub.");
       router.push("/student");
     } catch (err: any) {
       const errorMsg =
-        err.response?.data?.message || "Failed to create account. Please try again.";
-      alert(errorMsg);
+        err.message || "Failed to create account. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

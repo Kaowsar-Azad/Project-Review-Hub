@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, LogIn, ArrowRight, ShieldCheck, GraduationCap } from "lucide-react";
-import { api } from "@/lib/api";
+import { toast } from "sonner";
+import { AuthService } from "../auth.service";
 
 export function LoginForm() {
   const router = useRouter();
@@ -14,8 +15,8 @@ export function LoginForm() {
 
   const handleQuickFill = (role: "student" | "mentor") => {
     if (role === "student") {
-      setEmail("student@reviewhub.com");
-      setPassword("student123");
+      setEmail("pranto@gmail.com");
+      setPassword("12345678");
     } else {
       setEmail("kaowsar148@gmail.com");
       setPassword("kaowsar148");
@@ -27,26 +28,26 @@ export function LoginForm() {
 
     try {
       setLoading(true);
-      const res = await api.post("/auth/sign-in/email", {
+      const data = await AuthService.signIn({
         email,
         password,
       });
 
-      if (res.data?.user) {
-        localStorage.setItem("user", JSON.stringify(res.data.user));
+      if (data?.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
       }
 
-      alert("Logged in successfully!");
+      toast.success("Welcome back! Logged in successfully.");
 
-      if (res.data?.user?.role === "MENTOR" || email.includes("mentor") || email === "kaowsar148@gmail.com") {
+      if ((data?.user as any)?.role === "MENTOR" || email.includes("mentor") || email === "kaowsar148@gmail.com") {
         router.push("/mentor");
       } else {
         router.push("/student");
       }
     } catch (err: any) {
       const errorMsg =
-        err.response?.data?.message || "Invalid email or password. Please try again.";
-      alert(errorMsg);
+        err.message || "Invalid email or password. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

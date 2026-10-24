@@ -7,8 +7,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  secret:
-    process.env.BETTER_AUTH_SECRET || "lkaew1hAqEynrLoXfua3qxQmXyYgWAXZ",
+  secret: process.env.BETTER_AUTH_SECRET,
   baseURL:
     process.env.BETTER_AUTH_URL ||
     "https://project-review-hub-backend.vercel.app",

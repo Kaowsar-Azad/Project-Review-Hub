@@ -49,6 +49,7 @@ router.get("/submissions", verifyAuth, requireMentor, async (req: AuthRequest, r
       include: {
         student: {
           select: {
+            name: true,
             fullName: true,
             email: true,
             studentId: true,

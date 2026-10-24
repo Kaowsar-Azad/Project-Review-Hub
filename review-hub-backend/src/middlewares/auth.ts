@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { auth } from "../lib/auth";
 import { fromNodeHeaders } from "better-auth/node";
+import prisma from "../lib/prisma";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -20,18 +21,30 @@ export const verifyAuth = async (
     });
 
     if (session?.user) {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true, role: true },
+      });
+
       req.user = {
         id: session.user.id,
-        role: (session.user as any).role || "STUDENT",
+        role: dbUser?.role || (session.user as any).role || "STUDENT",
       };
       return next();
     }
 
     const userId = req.headers["x-user-id"] as string;
-    const userRole = req.headers["x-user-role"] as "STUDENT" | "MENTOR";
 
     if (userId) {
-      req.user = { id: userId, role: userRole || "STUDENT" };
+      const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, role: true },
+      });
+
+      req.user = {
+        id: userId,
+        role: dbUser?.role || (req.headers["x-user-role"] as "STUDENT" | "MENTOR") || "STUDENT",
+      };
       return next();
     }
 
